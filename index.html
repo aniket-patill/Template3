@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Added maximum-scale to prevent auto-zoom glitches on reload -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Padam Bhansali - CV</title>
+    <style>
+        /* ---------------------------------------------------------
+           CORE VARIABLES
+           --------------------------------------------------------- */
+        :root {
+            --blue-header: #1a3556;
+            --grey-bg: #dbe1ec;
+            --border-color: #000000;
+            --text-black: #000000;
+            --bg-white: #ffffff;
+            --font-main: 'Times New Roman', Times, serif;
+            --viewer-bg: #525659;
+
+            /* A4 DIMENSIONS (Fixed Reference) */
+            --ref-width: 1000px;
+            --ref-height: 1414px; /* 1:1.414 Ratio */
+            
+            /* DYNAMIC SCALING FACTOR (Controlled by JS for shrinking content) */
+            --content-scale: 1; 
+        }
+
+        html {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
+        /* RESET & BASIC SETUP */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-print-color-adjust: exact; /* Ensures colors print correctly */
+            print-color-adjust: exact;
+        }
+
+        body {
+            background-color: var(--viewer-bg);
+            font-family: var(--font-main);
+            overflow-x: hidden; /* Vital */
+            min-height: 100vh;
+            width: 100vw;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* WRAPPER FIX */
+        #zoom-wrapper {
+            width: 100%;
+            overflow: hidden; /* Hides the overflow of the scaled element */
+            display: flex;
+            justify-content: center;
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+
+        /* ---------------------------------------------------------
+           THE SHEET (A4 CONTAINER)
+           --------------------------------------------------------- */
+        .page {
+            /* Fixed Dimensions based on reference */
+            width: var(--ref-width);
+            height: var(--ref-height);
+            background: var(--bg-white);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+            
+            /* Initial Padding (Scaled by content-scale) */
+            padding: calc(30px * var(--content-scale)) calc(40px * var(--content-scale));
+            
+            display: flex;
+            flex-direction: column;
+            
+            /* Prevent flexbox from squashing the width */
+            flex-shrink: 0; 
+
+            /* Origin for transform scaling */
+            transform-origin: top center;
+
+            /* Base font size scaling */
+            font-size: calc(15px * var(--content-scale));
+            line-height: 1.3;
+            color: #000;
+        }
+
+        /* TYPOGRAPHY & LINKS */
+        a {
+            color: blue;
+            text-decoration: underline;
+        }
+        
+        strong {
+            font-weight: bold;
+        }
+
+        p {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* TABLE STYLING (The core layout engine) */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid black;
+            margin-bottom: -1px; /* Collapses borders between stacked tables */
+            font-size: calc(15px * var(--content-scale));
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: calc(4px * var(--content-scale)) calc(6px * var(--content-scale));
+            vertical-align: top;
+            text-align: left;
+        }
+
+        /* HEADER SECTION */
+        .header-name {
+            font-size: calc(25px * var(--content-scale));
+            font-weight: bold;
+            margin-bottom: calc(0.5px * var(--content-scale));
+            color: #000;
+        }
+
+        .header-contact {
+            margin-bottom: calc(5px * var(--content-scale));
+            font-size: calc(17px * var(--content-scale));
+        }
+
+        /* BLUE HEADERS */
+        .section-header {
+            background-color: var(--blue-header);
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: calc(4px * var(--content-scale)) calc(6px * var(--content-scale));
+            border: 1px solid black;
+            font-size: calc(16px * var(--content-scale));
+        }
+
+        /* GREY SIDE HEADERS */
+        .grey-label {
+            background-color: var(--grey-bg);
+            font-weight: bold;
+            width: 18%; /* Approximate width from image */
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .work-label {
+            background-color: var(--grey-bg);
+            font-weight: bold;
+            font-size: calc(18px * var(--content-scale));
+            width: 14%;
+            vertical-align: middle;
+            text-align: left;
+        }
+
+        /* SPECIFIC TABLE ADJUSTMENTS */
+        .qual-table th {
+            text-align: center;
+            background-color: var(--grey-bg);
+            font-weight: bold;
+        }
+
+        .qual-table td {
+            text-align: center;
+        }
+
+        .qual-table td:last-child {
+            text-align: left; /* Remarks column is left aligned */
+        }
+
+        /* SUB-HEADERS IN TABLES */
+        .sub-header-row {
+            background-color: var(--grey-bg);
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            border: none;
+            width: 100%;
+        }
+        
+        .sub-header-cell {
+            background-color: var(--grey-bg);
+            padding: calc(4px * var(--content-scale)) calc(6px * var(--content-scale));
+            font-weight: bold;
+            border-bottom: 1px solid black;
+        }
+
+        /* LIST STYLING */
+        ul {
+            margin: 0;
+            padding-left: calc(20px * var(--content-scale)); /* Tight indentation */
+        }
+
+        li {
+            margin-bottom: calc(2px * var(--content-scale));
+            text-align: justify;
+        }
+
+        /* UTILITY CLASSES */
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-small { font-size: calc(13px * var(--content-scale)); }
+        
+        /* ---------------------------------------------------------
+           PRINT STYLES - STRICT SINGLE PAGE A4
+           --------------------------------------------------------- */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+
+            html,
+            body {
+                width: 210mm;
+                height: 297mm;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden !important;
+                background: #ffffff !important;
+            }
+
+            #zoom-wrapper {
+                display: block !important;
+                width: 100% !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: visible !important;
+                transform: none !important; /* Reset transform */
+            }
+
+            .page {
+                width: 1000px !important; /* Keep design width */
+                /* height: 1414px !important;  Keep design height */
+                margin: 0 auto !important;
+                box-shadow: none !important;
+                border: none !important;
+                
+                /* SCALE TO A4 */
+                /* 210mm / 1000px = ~0.7937 */
+                zoom: 0.7937; 
+                -moz-transform: scale(0.7937);
+                -moz-transform-origin: top center;
+                
+                /* Reset other transforms */
+                transform: none !important; 
+                position: static !important;
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            /* Hide any buttons if present */
+            #print-btn { display: none; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- WRAPPER FIX -->
+    <div id="zoom-wrapper">
+        <div class="page" id="cv-page">
+            
+            <div class="header-name">Padam Bhansali</div>
+            <div class="header-contact">
+                <strong>Email:</strong> <a href="mailto:capadambhansali@gmail.com">capadambhansali@gmail.com</a> | 
+                <strong>Phone:</strong> +91-7228881182 | 
+                <a href="https://www.linkedin.com/in/ca-padam-bhansali" target="_blank">https://www.linkedin.com/in/ca-padam-bhansali</a>
+            </div>
+
+            <table>
+                <tr>
+                    <td class="grey-label" style="text-align: center;">CAREER OBJECTIVE</td>
+                    <td>
+                        A highly motivated and ambitious CA aspirant currently pursuing articleship under SPS Associates, Delhi. Actively seeking an industrial training opportunity with a dynamic organization to acquire comprehensive industry insights, practical experience, and deliver impactful contributions to the entity.
+                    </td>
+                </tr>
+            </table>
+
+            <div class="section-header">PROFESSIONAL & EDUCATIONAL QUALIFICATIONS</div>
+
+            <table class="qual-table">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Course/Examination</th>
+                        <th style="width: 25%;">Institution</th>
+                        <th style="width: 12%;">Year of Passing</th>
+                        <th style="width: 10%;">Results</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>CA Intermediate (Both Groups)</td>
+                        <td>ICAI</td>
+                        <td>2023</td>
+                        <td>459/800</td>
+                        <td>Cleared both groups in <strong>1<sup>st</sup> attempt</strong> with <strong>exemption in 3 subjects</strong>.</td>
+                    </tr>
+                    <tr>
+                        <td>CA Foundation</td>
+                        <td>ICAI</td>
+                        <td>2022</td>
+                        <td>335/400<br>(84%)</td>
+                        <td>Cleared the exam in <strong>1<sup>st</sup> attempt</strong> with <strong>distinction in all subjects</strong>.</td>
+                    </tr>
+                    <tr>
+                        <td>B. Com (Hons)</td>
+                        <td>Atmaram Sanatan<br>Dharma College (DU)</td>
+                        <td>2024</td>
+                        <td>7.27<br>CGPA</td>
+                        <td>Completed the program with <strong>First Division</strong>.</td>
+                    </tr>
+                    <tr>
+                        <td>Class XII (Commerce)</td>
+                        <td>RPVV Sector-5 Dwarka</td>
+                        <td>2021</td>
+                        <td>97.75%</td>
+                        <td><strong>Achieved 1st Rank in School out of 140+ students.</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Class X</td>
+                        <td>GGSSS Mohan Garden</td>
+                        <td>2019</td>
+                        <td>96.6%</td>
+                        <td><strong>1<sup>st</sup> Rank in the entire district</strong> (received excellence award).</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="section-header" style="border-top: none;">WORK EXPERIENCE</div>
+
+            <table style="border-top: none;">
+                <tr>
+                    <td colspan="2" class="sub-header-cell">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Article Assistant – (SPS ASSOCIATES)</span>
+                            <span style="font-style: italic;">Jun’24 – CURRENT</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="work-label">Statutory Audit</td>
+                    <td>
+                        <ul>
+                            <li><strong>Led statutory audits</strong> for a diverse portfolio of <strong>listed and unlisted companies</strong> with revenues exceeding ₹700 Cr.</li>
+                            <li>Gained exposure in various industries such as <strong>Tourism, Trading, Manufacturing, IT, and Business Consulting.</strong></li>
+                            <li><strong>Developed a strong understanding of financial reporting frameworks</strong>, including the structure and components of financial statements and gained exposure to <strong>industry-specific accounting treatments and disclosures.</strong></li>
+                            <li><strong>Performed detailed testing of financial statements</strong> to ensure accurate <strong>financial reporting and regulatory compliance</strong> as per the Companies Act, Income Tax Act, and Ind AS.</li>
+                            <li><strong>Evaluated the effectiveness of internal control systems</strong> across financial processes, identified control weaknesses and procedural gaps, and provided actionable recommendations to strengthen controls and enhance process efficiency.</li>
+                            <li><strong>Coordinated with clients and cross-functional teams</strong> for gathering financial data and resolving discrepancies. Improving the communication and client interaction.</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="work-label">Statutory Compliance & Tax Filings</td>
+                    <td>
+                        <ul>
+                            <li>Independently managed the end-to-end process of filing statutory returns, ensuring strict adherence to compliance timelines under GST and TDS regulations, minimizing the risk of penalties and interest liabilities.</li>
+                            <li><strong>Prepared, reviewed, and filed GST returns including GSTR-1, GSTR-3B, and GSTR-9, as well as TDS returns (Forms 24Q and 26Q)</strong>, with precision and in alignment with applicable tax laws and organizational policies.</li>
+                            <li>Conducted <strong>regular reconciliations of Input Tax Credit (ITC)</strong> across purchase registers, <strong>GSTR-2A/2B</strong>, and books of accounts, ensuring optimal credit utilization, timely corrections, and accurate reporting in GST filings.</li>
+                            <li><strong>Led GST audits for three clients</strong>, reconciling turnover, and ITC between books and the GST portal, identifying discrepancies, and streamlining processes for improved compliance and reporting accuracy.</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="work-label">Financial Reporting & others</td>
+                    <td>
+                        <ul>
+                            <li><strong>Oversaw complete accounting operations using Tally Prime</strong>, including journal entries, ledger maintenance, bank reconciliations, and expense tracking, to ensure accurate financial data entry, processing, and timely reporting.</li>
+                            <li><strong>Prepared, reviewed, and finalized financial statements</strong> for over <strong>10 clients across various sectors</strong>, ensuring full compliance with applicable Accounting Standards, tax laws, and statutory reporting requirements.</li>
+                            <li><strong>Independently prepared 15 CA/CB and Financial Capability Certificates</strong> for various clients across different sectors after reviewing and analyzing client-submitted data, financial statements, and supporting documentation.</li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+
+            <div class="section-header" style="border-top: none;">EXTRACURRICULAR ACTIVITIES, CERTIFICATIONS, AND SKILLS</div>
+
+            <table style="border-top: none;">
+                <tr>
+                    <td class="work-label">Extracurricular Activities</td>
+                    <td>
+                        <ul>
+                            <li><strong>Branch-Level Winner</strong> in the <strong>Elocution Contest conducted by ICAI</strong> as part of the National Talent Search, demonstrating public speaking skills and thought articulation skills. <strong>AIR 96 in S7 National online poetry contest</strong>.</li>
+                            <li><strong>Silver Medalist in National-level Accounting Olympiad</strong> - 2024. <strong>Secured AIR 9 in ICAI Commerce Quiz</strong> - 2020.</li>
+                            <li><strong>Excellence Award in Academics</strong>, conferred by the Honorable Former Education Minister of Delhi in the presence of Honorable Former Chief Minister for consistent academic excellence in 2019.</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="work-label">Certifications</td>
+                    <td>
+                        <ul>
+                            <li><strong>FMVA Certification</strong>: Successfully <strong>completed a 19+ hour Financial Modeling and Valuation course</strong> from CA Monk, gaining hands-on knowledge in building dynamic financial models and performing valuation analysis.</li>
+                            <li><strong>ICAI Trainings</strong>: Completed <strong>Information Technology (IT) and Orientation Course (OC)</strong> conducted by the Institute of Chartered Accountants of India (ICAI); <strong>recognized as Best Presenter</strong> in both IT and OC batches.</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="work-label">Skill Set</td>
+                    <td>
+                        <ul>
+                            <li><strong>Technical Skills:</strong> Proficient in MS Excel, MS PowerPoint, and MS Word; experienced in <strong>Tally Prime</strong> for efficient accounting operations; <strong>foundational knowledge of SAP ERP</strong> systems.</li>
+                            <li><strong>Soft Skills:</strong> Excellent <strong>communication and interpersonal skills</strong> and strong <strong>leadership and team management abilities</strong>; adept at <strong>critical thinking</strong>, effectively adapting to dynamic and evolving environments, and creative writing.</li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+    </div>
+
+    <!-- SCRIPT -->
+    <script>
+        // 1. SCALING LOGIC (Visual Zoom)
+        function scaleToFit() {
+            const page = document.getElementById('cv-page');
+            const wrapper = document.getElementById('zoom-wrapper');
+            const windowWidth = window.innerWidth;
+            const targetWidth = windowWidth - 20; // 10px padding on each side for mobile feeling
+            const refWidth = 1000; // The fixed width of our .cv-page in CSS
+
+            let scale = 1;
+            
+            // Only scale down if screen is smaller than reference
+            if (targetWidth < refWidth) {
+                scale = targetWidth / refWidth;
+            }
+
+            page.style.transform = `scale(${scale})`;
+            
+            // Adjust margin bottom to remove whitespace created by scaling
+            const refHeight = 1414;
+            const currentVisualHeight = refHeight * scale;
+            const spaceToRemove = refHeight - currentVisualHeight;
+            page.style.marginBottom = `-${spaceToRemove}px`;
+        }
+
+        // 2. SHRINK TO FIT LOGIC (Content Compression)
+        function shrinkContentToFit() {
+            const page = document.getElementById('cv-page');
+            const maxHeight = 1414; 
+            
+            let contentScale = 1;
+            document.documentElement.style.setProperty('--content-scale', contentScale);
+
+            let iterations = 0;
+            while (page.scrollHeight > maxHeight && iterations < 50) {
+                contentScale -= 0.02; 
+                document.documentElement.style.setProperty('--content-scale', contentScale);
+                iterations++;
+            }
+        }
+
+        let screenTransform = '';
+        let screenMarginBottom = '';
+
+        function enablePrintMode() {
+            const page = document.getElementById('cv-page');
+            screenTransform = page.style.transform;
+            screenMarginBottom = page.style.marginBottom;
+            document.body.classList.add('print-mode');
+
+            page.style.transform = 'scale(1)';
+            page.style.marginBottom = '0px';
+
+            shrinkContentToFit();
+        }
+
+        function handlePrintChange(e) {
+            if (e.matches) {
+                enablePrintMode();
+            } else {
+                disablePrintMode();
+            }
+        }
+
+        function disablePrintMode() {
+            const page = document.getElementById('cv-page');
+            document.body.classList.remove('print-mode');
+
+            page.style.transform = screenTransform || '';
+            page.style.marginBottom = screenMarginBottom || '';
+
+            scaleToFit();
+        }
+
+        function init() {
+            shrinkContentToFit(); 
+            scaleToFit();
+
+            const printMedia = window.matchMedia('print');
+            if (printMedia.addEventListener) {
+                printMedia.addEventListener('change', handlePrintChange);
+            } else if (printMedia.addListener) {
+                printMedia.addListener(handlePrintChange);
+            }
+
+            window.addEventListener('beforeprint', enablePrintMode);
+            window.addEventListener('afterprint', disablePrintMode);
+        }
+
+        window.addEventListener('load', init);
+        
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(scaleToFit, 100); 
+        });
+    </script>
+</body>
+</html>
